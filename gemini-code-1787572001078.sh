@@ -1,0 +1,1 @@
+git remote add origin https://github.com/YOUR_GITHUB_USERNAME/scopepulse.git
