@@ -176,6 +176,14 @@ export default function WorkspaceShell({ aiConfigured }: { aiConfigured: boolean
             });
             return;
           }
+        } else if (message.action === "google-sign-in") {
+          const result = await supabase.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+              redirectTo: window.location.origin,
+            },
+          });
+          errorMessage = result.error?.message ?? null;
         } else if (message.action === "sign-out") {
           const result = await supabase.auth.signOut();
           errorMessage = result.error?.message ?? null;

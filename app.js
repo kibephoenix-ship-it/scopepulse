@@ -248,6 +248,8 @@ function handleHostMessage(event) {
   }
   if (message.type === "auth-result") {
     $("#auth-submit").disabled = false;
+    $("#google-signin").disabled = false;
+    $("#google-signin").textContent = "Continue with Google";
     if (message.error) {
       $("#auth-notice").textContent = message.error;
     } else if (message.message) {
@@ -903,6 +905,22 @@ function initAuth() {
   $("#auth-switch").addEventListener("click", () => {
     setAuthMode(state.authMode === "sign-in" ? "sign-up" : "sign-in");
     $("#auth-notice").textContent = "";
+  });
+  $("#google-signin").addEventListener("click", async () => {
+    if (!state.backendConfigured) {
+      $("#auth-notice").textContent = "Connect Supabase before signing in with Google.";
+      return;
+    }
+    const button = $("#google-signin");
+    button.disabled = true;
+    button.textContent = "Connecting to Google…";
+    $("#auth-notice").textContent = "";
+    const result = await requestFromHost("auth", { action: "google-sign-in" });
+    if (result.error) {
+      $("#auth-notice").textContent = result.error;
+      button.disabled = false;
+      button.textContent = "Continue with Google";
+    }
   });
   $("#auth-form").addEventListener("submit", async (event) => {
     event.preventDefault();
