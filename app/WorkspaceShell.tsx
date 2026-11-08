@@ -1,6 +1,7 @@
 "use client";
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useEffect, useMemo, useRef } from "react";
 
 type FrameMessage = {
@@ -25,7 +26,12 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 export default function WorkspaceShell({ aiConfigured }: { aiConfigured: boolean }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const supabase = useMemo<SupabaseClient | null>(
-    () => (supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null),
+    () =>
+      supabaseUrl && supabaseKey
+        ? createBrowserClient(supabaseUrl, supabaseKey, {
+            auth: { flowType: "pkce" },
+          })
+        : null,
     [],
   );
 
@@ -118,6 +124,10 @@ export default function WorkspaceShell({ aiConfigured }: { aiConfigured: boolean
           configured: Boolean(supabase),
           aiConfigured: Boolean(supabase) && aiConfigured,
         });
+        if (new URLSearchParams(window.location.search).get("error") === "oauth") {
+          reply({ type: "auth-state", user: null, error: "Google sign-in could not be completed. Please try again." });
+          window.history.replaceState(null, "", `${window.location.pathname}${window.location.hash}`);
+        }
         if (!supabase) {
           reply({ type: "auth-state", user: null });
           reply({ type: "workspace-list", workspaces: [], activeWorkspaceId: null });
@@ -180,7 +190,7 @@ export default function WorkspaceShell({ aiConfigured }: { aiConfigured: boolean
           const result = await supabase.auth.signInWithOAuth({
             provider: "google",
             options: {
-              redirectTo: window.location.origin,
+              redirectTo: `${window.location.origin}/auth/callback`,
             },
           });
           errorMessage = result.error?.message ?? null;

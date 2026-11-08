@@ -28,4 +28,4 @@ Sign in, generate and save a proposal, then select **Preview client link** to pu
 
 Set the Supabase Auth site URL to your production domain and allow the local/deployed redirect URLs. Never put a Supabase service-role key in the browser or in committed files.
 
-Google sign-in uses Supabase OAuth and returns to the app origin. Configure the Google provider and redirect allow lists in Supabase before using the button.
+Google sign-in uses Supabase OAuth with PKCE and the `/auth/callback` route. Configure the Google provider and add `https://<your-app-domain>/auth/callback` to the Supabase Auth URL allow list, alongside your local and production app origins, before using the button.
