@@ -2,6 +2,8 @@
 
 A no-build, responsive frontend prototype for a strategy-first proposal workflow. Open `index.html` directly in a modern browser, or serve this folder from a local HTTP server to enable clipboard permissions.
 
+The Next.js App Router entry point is `app/page.tsx`. Start it locally with `npm run dev`, and create a production build with `npm run build`.
+
 ## Try the workflow
 
 1. Review or edit the sample client brief and choose a proposal angle.
