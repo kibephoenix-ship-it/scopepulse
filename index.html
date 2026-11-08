@@ -12,14 +12,15 @@
     <div class="app-shell">
       <aside class="sidebar">
         <a class="brand" href="#overview" aria-label="ScopePulse home">
-          <span class="brand-mark"><span></span><span></span><span></span></span>
-          <span>scope<span class="brand-light">pulse</span></span>
+          <img src="/scopepulse/logo.png" alt="ScopePulse — Proposal Intelligence">
         </a>
         <div class="workspace-picker">
           <span class="avatar avatar-violet">J</span>
-          <span class="workspace-copy"><strong>Jordan's studio</strong><small>Pro workspace</small></span>
+          <span class="workspace-copy"><strong id="workspace-name">My workspace</strong><small>Switch workspace</small></span>
+          <select id="workspace-select" aria-label="Switch workspace"><option value="">My workspace</option></select>
           <span class="chevron">⌄</span>
         </div>
+        <button class="workspace-create" id="workspace-create">＋ New workspace</button>
         <p class="nav-label">WORKSPACE</p>
         <nav class="primary-nav" aria-label="Main navigation">
           <button class="nav-item active" data-view="overview"><span class="nav-icon">◫</span>Overview</button>
@@ -35,16 +36,18 @@
             <button class="text-button" data-view="settings">Explore Pro <span>↗</span></button>
           </div>
           <button class="nav-item settings-link" data-view="settings"><span class="nav-icon">⚙</span>Settings</button>
-          <button class="profile-button"><span class="avatar avatar-blue">JD</span><span class="profile-copy"><strong>Jordan Davis</strong><small>jordan@studio.co</small></span><span class="chevron">···</span></button>
+          <button class="profile-button" id="profile-button"><span class="avatar avatar-blue">JD</span><span class="profile-copy"><strong id="profile-name">Jordan Davis</strong><small id="profile-email">Demo workspace</small></span><span class="chevron">···</span></button>
         </div>
       </aside>
+      <button class="mobile-nav-backdrop" id="mobile-nav-backdrop" aria-label="Close navigation" tabindex="-1"></button>
 
       <main class="main-area">
         <header class="topbar">
-          <div class="breadcrumbs"><span>Workspace</span><span class="crumb-divider">/</span><strong id="current-crumb">Overview</strong></div>
+          <div class="topbar-leading"><button class="mobile-menu-button" id="mobile-menu-button" aria-label="Open navigation" aria-expanded="false">☰</button><div class="breadcrumbs"><span>Workspace</span><span class="crumb-divider">/</span><strong id="current-crumb">Overview</strong></div></div>
           <div class="topbar-actions">
             <button class="icon-button notification-button" aria-label="Notifications" title="Notifications" id="notification-button">♧<span class="notification-dot"></span></button>
             <button class="shortcut-button" id="command-open"><span>⌘</span> K <span class="shortcut-hint">Quick actions</span></button>
+            <button class="button button-secondary auth-button" id="auth-button">Sign in</button>
             <span class="avatar avatar-blue top-avatar">JD</span>
           </div>
         </header>
@@ -62,6 +65,7 @@
               <article class="stat-card"><div class="stat-top"><span>Avg. proposal value</span><span class="stat-icon amber">$</span></div><div class="stat-value">$4,850 <span class="stat-change positive">↑ 12%</span></div><div class="stat-foot">across 12 proposals</div></article>
               <article class="stat-card"><div class="stat-top"><span>Client attention</span><span class="stat-icon rose">◷</span></div><div class="stat-value">4m 32s <span class="stat-change neutral">avg.</span></div><div class="stat-foot">time spent reviewing</div></article>
             </div>
+            <article class="panel first-run-empty" id="first-run-empty" hidden><span class="empty-spark">✳</span><div><p class="eyebrow">WELCOME TO SCOPEPULSE</p><h2>Your next great client starts with a brief.</h2><p>Paste a job description below. We’ll flag scope and budget risks, then help you shape a considered offer with room to grow.</p><button class="button button-primary" id="empty-start">Add your first project brief <span>↓</span></button></div><div class="empty-steps"><span>01&nbsp; Paste the brief</span><span>02&nbsp; Review the strategy</span><span>03&nbsp; Share your proposal</span></div></article>
 
             <div class="section-title-row"><div><p class="eyebrow">YOUR STRATEGY DESK</p><h2>Start with the brief</h2></div><span class="secure-note"><span>✦</span> Thoughtful proposals, not templates</span></div>
             <div class="strategy-grid">
@@ -76,7 +80,7 @@
                   <button type="button" class="clipboard-button" id="clipboard-parse">↧ <span>Paste from clipboard</span><span class="clipboard-hint">Parse a copied job post</span></button>
                   <div class="tone-picker"><div class="tone-label"><span>PROPOSAL ANGLE</span><span class="field-meta">Choose your point of view</span></div><div class="tone-options" role="group" aria-label="Proposal tone"><button type="button" class="tone-option selected" data-tone="collaborative"><span>◉</span><strong>Collaborative</strong><small>Agile & human</small></button><button type="button" class="tone-option" data-tone="formal"><span>◈</span><strong>Data-driven</strong><small>Formal & clear</small></button><button type="button" class="tone-option" data-tone="bold"><span>↗</span><strong>Disruptive</strong><small>Bold & visionary</small></button></div></div>
                   <button class="button button-primary generate-button" id="generate-button" type="submit"><span>✦</span> Analyze & shape proposal <span class="button-arrow">→</span></button>
-                  <p class="form-footnote"><span>⌁</span> Strategy analysis is a local demo. Connect an AI provider for production insights.</p>
+                  <p class="form-footnote" id="analysis-disclaimer"><span>⌁</span> Local preview uses heuristic analysis. Connect your workspace to enable AI-powered insights.</p>
                 </form>
               </article>
 
@@ -106,13 +110,13 @@
             </article>
 
             <div class="section-title-row recent-title-row"><div><p class="eyebrow">KEEP THE MOMENTUM</p><h2>Recent proposals</h2></div><button class="link-button" data-view="proposals">View all →</button></div>
-            <div class="panel recent-panel"><div class="recent-row"><span class="recent-mark mark-lime">N</span><div class="recent-name"><strong>Northstar Labs</strong><small>Customer portal redesign</small></div><span class="recent-amount">$6,400</span><span class="status-pill status-viewed">Viewed</span><span class="recent-time">2h ago</span><button class="row-arrow" aria-label="Open Northstar Labs proposal">↗</button></div><div class="recent-row"><span class="recent-mark mark-purple">S</span><div class="recent-name"><strong>Studio Lumen</strong><small>Brand identity & web</small></div><span class="recent-amount">$3,200</span><span class="status-pill status-won">Won</span><span class="recent-time">Yesterday</span><button class="row-arrow" aria-label="Open Studio Lumen proposal">↗</button></div></div>
+            <div class="panel recent-panel" id="recent-proposals"><div class="recent-row"><span class="recent-mark mark-lime">N</span><div class="recent-name"><strong>Northstar Labs</strong><small>Customer portal redesign</small></div><span class="recent-amount">$6,400</span><span class="status-pill status-viewed">Viewed</span><span class="recent-time">2h ago</span><button class="row-arrow" aria-label="Open Northstar Labs proposal">↗</button></div><div class="recent-row"><span class="recent-mark mark-purple">S</span><div class="recent-name"><strong>Studio Lumen</strong><small>Brand identity & web</small></div><span class="recent-amount">$3,200</span><span class="status-pill status-won">Won</span><span class="recent-time">Yesterday</span><button class="row-arrow" aria-label="Open Studio Lumen proposal">↗</button></div></div>
           </section>
 
           <section class="view" id="view-proposals">
             <div class="page-heading compact-heading"><div><p class="eyebrow">YOUR WORK, IN MOTION</p><h1>Proposals</h1><p class="page-subtitle">Keep every conversation moving forward.</p></div><button class="button button-primary" data-view="overview"><span>＋</span> Create proposal</button></div>
             <div class="filter-row"><div class="filter-tabs"><button class="filter-tab active" data-filter="all">All <span>4</span></button><button class="filter-tab" data-filter="viewed">Viewed <span>2</span></button><button class="filter-tab" data-filter="sent">Sent <span>1</span></button><button class="filter-tab" data-filter="won">Won <span>1</span></button></div><button class="button button-secondary search-button" id="proposal-search">⌕ Search proposals <kbd>/</kbd></button></div>
-            <div class="proposal-list">
+            <div class="panel first-run-empty proposal-empty" id="proposal-empty" hidden><span class="empty-spark">✳</span><div><h2>No proposals yet</h2><p>Start with a client’s job post. Your analyzed proposals and pricing options will be saved here.</p><button class="button button-primary" data-view="overview">Create your first proposal →</button></div></div><div class="proposal-list" id="proposal-list">
               <article class="proposal-list-card" data-status="viewed"><span class="recent-mark mark-lime">N</span><div class="list-main"><strong>Northstar Labs</strong><small>Customer portal redesign · Sent Nov 8</small></div><span class="list-amount">$6,400</span><span class="status-pill status-viewed">Viewed · 2h ago</span><button class="button button-secondary small-button" data-view="overview">Open</button></article>
               <article class="proposal-list-card" data-status="won"><span class="recent-mark mark-purple">S</span><div class="list-main"><strong>Studio Lumen</strong><small>Brand identity & web · Sent Nov 7</small></div><span class="list-amount">$3,200</span><span class="status-pill status-won">Won</span><button class="button button-secondary small-button" data-view="overview">Open</button></article>
               <article class="proposal-list-card" data-status="sent"><span class="recent-mark mark-orange">F</span><div class="list-main"><strong>Fieldnotes Health</strong><small>Patient onboarding flow · Sent Nov 6</small></div><span class="list-amount">$5,800</span><span class="status-pill status-sent">Sent · 1d ago</span><button class="button button-secondary small-button" data-view="overview">Open</button></article>
@@ -149,14 +153,16 @@
           </section>
 
           <section class="view client-view" id="view-client">
-            <div class="client-topbar"><button class="client-brand" data-view="overview"><span class="brand-mark"><span></span><span></span><span></span></span> scope<span>pulse</span></button><span>Prepared for you by Jordan Davis <span class="client-live"><i></i> SECURE PREVIEW</span></span></div>
+            <div class="client-topbar"><button class="client-brand" data-view="overview"><img src="/scopepulse/logo.png" alt="ScopePulse"></button><span>Prepared for you by Jordan Davis <span class="client-live"><i></i> SECURE PREVIEW</span></span></div>
             <div class="client-document">                        <div class="client-doc-eyebrow"><span>PROJECT PROPOSAL</span><span>NOVEMBER 8, 2026</span></div><span class="client-logo client-doc-logo">B</span><h1 id="portal-client-name">Brightforge</h1><p class="client-doc-subtitle">A considered first step toward your next chapter.</p><div class="client-doc-divider"></div><div class="client-section" id="portal-overview-section"><span class="doc-section-label">01 — THE OPPORTUNITY</span><h2>Make the complex feel effortless.</h2><p id="portal-overview">Your analytics experience should make the next right decision obvious. We’ll start by understanding where users get stuck, then shape a focused experience around the moments that matter.</p></div><div class="client-section" id="portal-approach-section"><span class="doc-section-label">02 — THE APPROACH</span><div class="approach-steps"><div><span>01</span><strong>Discover</strong><small>Understand your users and the highest-impact workflow.</small></div><div><span>02</span><strong>Shape</strong><small>Explore, validate, and align on a clear direction.</small></div><div><span>03</span><strong>Deliver</strong><small>Hand off considered designs, ready for your team.</small></div></div></div><div class="client-section client-investment" id="portal-investment-section"><div><span class="doc-section-label">03 — CHOOSE YOUR PATH</span><h2>Start where it makes sense.</h2></div><div class="portal-tier-list" id="portal-tier-list"></div></div><div class="client-section"><span class="doc-section-label">04 — A NOTE FROM JORDAN</span><p class="personal-note" id="portal-note">The best work happens when we make the hard choices together. I’m looking forward to learning what matters most to your team and finding the right first step.</p><span class="signature-script">Jordan Davis</span><small class="signature-caption">Jordan Davis · Independent Product Designer</small></div><div class="acceptance-box"><div class="acceptance-heading"><span>READY TO MOVE FORWARD?</span><span class="secure-mark">⌑ Secure acceptance</span></div><h2>Let’s make it happen.</h2><p>Choose an option, sign below, and we’ll take it from there.</p><label class="field signature-field"><span>TYPE YOUR NAME TO SIGN</span><input id="signature-name" type="text" placeholder="Your full name" autocomplete="name"></label><label class="consent-row"><input id="accept-terms" type="checkbox"><span>I agree to the selected scope and would like to begin.</span></label><button class="button button-primary accept-button" id="accept-proposal">Accept proposal & continue <span>→</span></button><p class="checkout-note">Deposit checkout is simulated in this preview. No payment will be collected.</p></div><div class="client-doc-footer">Thoughtfully made with <strong>scope<span>pulse</span></strong></div></div>
           </section>
         </div>
-        <footer class="app-footer"><span>Made for the work you want to win.</span><span>ScopePulse <i>·</i> Frontend prototype</span></footer>
+        <footer class="app-footer"><span>Made for the work you want to win.</span>        <span>ScopePulse <i>·</i> Proposal intelligence</span></footer>
       </main>
     </div>
 
+    <div class="auth-overlay" id="auth-overlay" aria-hidden="true"><section class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title"><button class="auth-close" id="auth-close" aria-label="Close sign in">×</button><img class="auth-logo" src="/scopepulse/logo.png" alt="ScopePulse"><p class="eyebrow">YOUR PROPOSAL WORKSPACE</p><h2 id="auth-title">Welcome back</h2><p class="auth-description">Sign in to analyze briefs and keep your proposals safely in sync.</p><form id="auth-form"><label class="field"><span>EMAIL ADDRESS</span><input id="auth-email" type="email" placeholder="you@studio.com" autocomplete="email" required></label><label class="field"><span>PASSWORD <span class="optional">(8+ CHARACTERS)</span></span><input id="auth-password" type="password" placeholder="Your password" autocomplete="current-password" minlength="8" required></label><button class="button button-primary auth-submit" id="auth-submit" type="submit">Sign in <span>→</span></button></form><p class="auth-switch">New to ScopePulse? <button id="auth-switch" type="button">Create an account</button></p><p class="auth-notice" id="auth-notice" aria-live="polite"></p><p class="auth-security">Your credentials are handled securely by Supabase.</p></section></div>
+    <div class="auth-overlay" id="workspace-overlay" aria-hidden="true"><section class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="workspace-dialog-title"><button class="auth-close" id="workspace-close" aria-label="Close new workspace">×</button><img class="auth-logo" src="/scopepulse/logo.png" alt="ScopePulse"><p class="eyebrow">WORKSPACE SETUP</p><h2 id="workspace-dialog-title">Make room for a new focus.</h2><p class="auth-description">Separate client proposals into their own workspace.</p><form id="workspace-form"><label class="field"><span>WORKSPACE NAME</span><input id="workspace-input" type="text" minlength="2" maxlength="80" placeholder="e.g. Northstar Studio" required></label><button class="button button-primary auth-submit" id="workspace-submit" type="submit">Create workspace <span>→</span></button></form><p class="auth-notice" id="workspace-notice" aria-live="polite"></p></section></div>
     <div class="command-overlay" id="command-overlay" aria-hidden="true"><div class="command-dialog" role="dialog" aria-modal="true" aria-label="Quick actions"><div class="command-search"><span>⌕</span><input id="command-input" type="text" placeholder="Where would you like to go?" autocomplete="off"><kbd>ESC</kbd></div><div class="command-label">QUICK ACTIONS</div><div class="command-results" id="command-results"><button data-command="generate"><span>✦</span><strong>Start a new proposal</strong><kbd>N</kbd></button><button data-command="overview"><span>◫</span><strong>Go to overview</strong><kbd>G O</kbd></button><button data-command="proposals"><span>▤</span><strong>Browse proposals</strong><kbd>G P</kbd></button><button data-command="insights"><span>⌁</span><strong>Open insights</strong><kbd>G I</kbd></button><button data-command="integrations"><span>⌘</span><strong>Manage integrations</strong><kbd>G C</kbd></button></div><div class="command-foot"><span>Navigate with <kbd>↑</kbd> <kbd>↓</kbd></span><span>Press <kbd>↵</kbd> to select</span></div></div></div>
     <div class="toast-region" id="toast-region" aria-live="polite"></div>
     <script src="app.js"></script>

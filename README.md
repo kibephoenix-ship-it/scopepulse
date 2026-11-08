@@ -1,21 +1,28 @@
 # ScopePulse
 
-A no-build, responsive frontend prototype for a strategy-first proposal workflow. Open `index.html` directly in a modern browser, or serve this folder from a local HTTP server to enable clipboard permissions.
+ScopePulse is a strategy-first proposal workspace built with Next.js. The responsive dashboard is served in the App Router app from `public/scopepulse/`; the standalone `index.html` remains available for a local, heuristic-only preview.
 
-The Next.js App Router entry point is `app/page.tsx`. It serves the proposal workspace from `public/scopepulse/`. Start locally with `npm run dev`, and create a production build with `npm run build`.
+## Run locally
 
-## Try the workflow
+1. Install dependencies with `npm install`.
+2. Copy `.env.example` to `.env.local` and add your Supabase project URL, Supabase anon/publishable key, and Anthropic API key.
+3. Apply [`supabase/schema.sql`](./supabase/schema.sql) in your Supabase SQL editor. It enables email/password accounts, creates a default workspace for new users, adds workspace and proposal storage, and configures row-level security and client acceptance.
+4. Add `http://localhost:3000/**` to the Supabase Auth URL configuration.
+5. Run `npm run dev`, then open `http://localhost:3000`.
 
-1. Review or edit the sample client brief and choose a proposal angle.
-2. Select **Analyze & shape proposal** to see a staged, heuristic scope scan and recalibrated pricing options.
-3. Select a pricing tier, then open the client preview to try the client-facing proposal and acceptance flow.
-4. Visit **Insights** to see sample proposal analytics and engagement from your preview session.
-5. Press **Ctrl/Cmd + K** for the command palette. `N` starts a proposal; `G` then `O`, `P`, `I`, or `C` opens Overview, Proposals, Insights, or Integrations.
+The root `render.yaml` is a Render Blueprint; Vercel deployments need the same environment variables configured in the project settings.
 
-The shareable client preview uses a local hash route, such as `#/p/brightforge`; the demo does not publish a hosted client link.
+## Production environment variables
 
-## Prototype boundary
+- `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL.
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase anon or publishable key. This is intentionally public; RLS protects all data.
+- `ANTHROPIC_API_KEY`: server-side Anthropic API key. Never expose this as a `NEXT_PUBLIC_` variable.
+- `ANTHROPIC_MODEL`: optional Anthropic model override; defaults to `claude-sonnet-4-5-20250929`.
 
-This project contains frontend demo behavior, not a production AI or proposal service. Brief scans use local keyword heuristics, sample analytics are illustrative, clipboard access depends on browser permissions, and client acceptance does not create a legally binding signature or collect a payment. Nothing is sent to an external provider.
+The analysis route requires an authenticated Supabase user, validates input and model output, and keeps the Anthropic key on the server. Missing service configuration is reported instead of silently presented as an AI result. Unauthenticated local preview uses clearly labelled heuristic sample analysis.
 
-A production launch needs a backend, authenticated accounts, persistent proposal and consent records, an AI provider and validation policy, hosted client routes, a compliant e-signature flow, Stripe Connect authorization and checkout, consent-aware analytics and notifications, and provider-authorized CRM/webhook integrations. Never put provider credentials in this static frontend.
+## Client links and acceptance
+
+Sign in, generate and save a proposal, then select **Preview client link** to publish a UUID-backed share URL at `/p/<id>`. Clients can choose a tier and record their name and explicit acceptance. Proposals and acceptance records are protected with Supabase RLS. This records an acceptance; it is **not** a qualified e-signature or payment checkout.
+
+Set the Supabase Auth site URL to your production domain and allow the local/deployed redirect URLs. Never put a Supabase service-role key in the browser or in committed files.

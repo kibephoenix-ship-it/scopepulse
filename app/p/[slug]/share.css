@@ -1,0 +1,59 @@
+.shared-page {
+  min-height: 100vh;
+  padding: 0 22px 64px;
+  color: #eceef2;
+  background:
+    radial-gradient(ellipse at 70% -15%, rgb(49 110 149 / 18%), transparent 48%),
+    #090b0f;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.shared-topbar {
+  width: min(840px, 100%);
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 auto;
+  border-bottom: 1px solid #202630;
+  color: #8993a1;
+  font-size: 11px;
+}
+.shared-topbar a { display: flex; align-items: center; }
+.shared-topbar img { width: 168px; height: auto; }
+.shared-document {
+  width: min(690px, 100%);
+  min-height: 360px;
+  margin: 38px auto 0;
+  padding: clamp(24px, 6vw, 52px);
+  border: 1px solid #282f39;
+  border-radius: 10px;
+  background: linear-gradient(150deg, #121820, #0e1116);
+  box-shadow: 0 22px 80px #0005;
+}
+.share-eyebrow,.share-section>span,.share-acceptance>span,.share-field>span {
+  color: #67c8dc;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: .13em;
+}
+.shared-document h1 { margin: 14px 0 5px; font-size: clamp(28px,6vw,40px); font-weight: 590; letter-spacing: -.055em; }
+.share-subtitle { margin: 0; color: #9ba4b0; font-size: 13px; }
+.share-summary { margin: 22px 0 0; color: #dae0e8; font-size: 16px; line-height: 1.65; }
+.share-section { margin-top: 30px; padding-top: 22px; border-top: 1px solid #262d37; }
+.share-section p { color: #a7b0bc; font-size: 12px; line-height: 1.8; white-space: pre-wrap; }
+.share-acceptance { margin-top: 32px; padding: 20px; border: 1px solid #26505b; border-radius: 8px; background: linear-gradient(145deg,#102128,#10161b); }
+.share-acceptance h2 { margin: 10px 0 15px; font-size: 19px; font-weight: 560; letter-spacing: -.035em; }
+.share-tiers { display: grid; gap: 8px; }
+.share-tier { min-width: 0; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 6px 12px; align-items: center; padding: 12px; border: 1px solid #303944; border-radius: 6px; background: #0c1116; cursor: pointer; }
+.share-tier.selected { border-color: #3da5b5; background: #112128; }
+.share-tier input { grid-column: 1; grid-row: 1; position: absolute; width: 1px; height: 1px; opacity: 0; }
+.share-tier span { display: grid; gap: 4px; }.share-tier strong { font-size: 11px; font-weight: 560; }.share-tier small { color: #929daa; font-size: 9px; }
+.share-tier b { grid-column: 2; grid-row: 1; color: #a1e2eb; font-size: 14px; white-space: nowrap; }
+.share-field { display: grid; gap: 7px; margin-top: 18px; }.share-field input { width: 100%; height: 40px; padding: 0 11px; border: 1px solid #343d47; border-radius: 5px; outline: none; background: #0c1116; color: #edf0f4; font: inherit; font-size: 12px; }.share-field input:focus { border-color: #44aebe; }
+.share-consent { display: flex; align-items: flex-start; gap: 8px; margin: 15px 0; color: #aab4bf; font-size: 10px; line-height: 1.55; }.share-consent input { margin-top: 1px; accent-color: #42bfcd; }
+.share-submit { width: 100%; min-height: 42px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; border: 1px solid #49c1cc; border-radius: 5px; background: #39b9c9; color: #071519; font: inherit; font-size: 11px; font-weight: 640; cursor: pointer; }.share-submit:disabled { opacity: .55; cursor: not-allowed; }.share-submit span { font-size: 16px; }
+.share-legal { margin: 11px 0 0; color: #7f8b96; font-size: 9px; line-height: 1.6; text-align: center; }.share-error { color: #f0a3a3; font-size: 10px; line-height: 1.5; }
+.share-state { min-height: 270px; display: grid; place-content: center; justify-items: center; gap: 12px; color: #a5afbb; text-align: center; font-size: 12px; }.share-state h1 { margin: 0; font-size: 21px; }.share-state p { max-width: 390px; margin: 0; line-height: 1.65; }
+.share-spinner { width: 24px; height: 24px; border: 2px solid #34424a; border-top-color: #53c4d2; border-radius: 50%; animation: share-spin .8s linear infinite; }.share-state-mark { width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid #68404a; border-radius: 50%; color: #f2a4a4; }
+@keyframes share-spin { to { transform: rotate(360deg); } }
+@media (max-width: 520px) { .shared-page { padding: 0 13px 36px; }.shared-topbar { height: 60px; font-size: 9px; }.shared-topbar img { width: 140px; }.shared-document { margin-top: 20px; padding: 22px 16px; }.share-acceptance { padding: 15px 12px; }.share-tier { padding: 10px 8px; }.share-tier small { font-size: 8px; }.share-tier b { font-size: 12px; } }

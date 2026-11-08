@@ -8,7 +8,18 @@ const state = {
   sectionTimes: { overview: 0, approach: 0, investment: 0 },
   connected: new Set(["Notion", "Trello"]),
   portalActive: false,
+  backendConfigured: false,
+  aiConfigured: false,
+  user: null,
+  currentProposalId: null,
+  currentProposalSlug: null,
+  currentAnalysis: null,
+  currentTiers: null,
+  workspaces: [],
+  activeWorkspaceId: null,
+  authMode: "sign-in",
 };
+const bridgeRequests = new Map();
 
 const toneCopy = {
   collaborative: {
@@ -55,6 +66,255 @@ function toast(message) {
   }, 2900);
 }
 
+function renderWorkspaces(workspaces, activeWorkspaceId = null) {
+  state.workspaces = Array.isArray(workspaces) ? workspaces : [];
+  state.activeWorkspaceId = activeWorkspaceId;
+  const select = $("#workspace-select");
+  select.innerHTML = state.workspaces.map((workspace) =>
+    `<option value="${escapeHTML(workspace.id)}">${escapeHTML(workspace.name)}</option>`,
+  ).join("");
+  select.disabled = state.workspaces.length === 0;
+  if (activeWorkspaceId) select.value = activeWorkspaceId;
+  const active = state.workspaces.find((workspace) => workspace.id === activeWorkspaceId);
+  $("#workspace-name").textContent = active?.name || (state.backendConfigured ? "Your workspace" : "Demo workspace");
+  $("#workspace-create").hidden = !state.user;
+  $(".workspace-picker").hidden = state.backendConfigured && !state.user;
+}
+
+function sendToHost(type, data = {}) {
+  if (window.parent === window) return false;
+  window.parent.postMessage(
+    { source: "scopepulse-frame", type, ...data },
+    window.location.origin,
+  );
+  return true;
+}
+
+function requestFromHost(type, data = {}, timeoutMs = 50000) {
+  const requestId = crypto.randomUUID();
+  return new Promise((resolve) => {
+    const timeout = window.setTimeout(() => {
+      bridgeRequests.delete(requestId);
+      resolve({ error: "The service did not respond. Please try again." });
+    }, timeoutMs);
+    bridgeRequests.set(requestId, (result) => {
+      window.clearTimeout(timeout);
+      bridgeRequests.delete(requestId);
+      resolve(result);
+    });
+    sendToHost(type, { ...data, requestId });
+  });
+}
+
+function updateAuthState(user) {
+  state.user = user || null;
+  const button = $("#auth-button");
+  button.textContent = state.user ? "Sign out" : "Sign in";
+  $("#profile-name").textContent = state.user?.user_metadata?.full_name || "Your workspace";
+  $("#profile-email").textContent = state.user?.email || (state.backendConfigured ? "Sign in to sync proposals" : "Local preview");
+  if (state.user) {
+    closeAuthDialog();
+    sendToHost("list-proposals");
+  } else if (state.backendConfigured) {
+    renderSavedProposals([]);
+    renderWorkspaces([]);
+    state.currentProposalId = null;
+    state.currentProposalSlug = null;
+    state.currentAnalysis = null;
+    state.currentTiers = null;
+  }
+}
+
+function closeAuthDialog() {
+  $("#auth-overlay").classList.remove("open");
+  $("#auth-overlay").setAttribute("aria-hidden", "true");
+}
+
+function openAuthDialog() {
+  const overlay = $("#auth-overlay");
+  overlay.classList.add("open");
+  overlay.setAttribute("aria-hidden", "false");
+  $("#auth-notice").textContent = state.backendConfigured
+    ? ""
+    : "Supabase isn't configured yet. Add the NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables to enable accounts.";
+  $("#auth-password").value = "";
+  $("#auth-email").focus();
+}
+
+function setAuthMode(mode) {
+  state.authMode = mode;
+  const signingUp = mode === "sign-up";
+  $("#auth-title").textContent = signingUp ? "Create your workspace" : "Welcome back";
+  $("#auth-submit").innerHTML = signingUp ? "Create account <span>→</span>" : "Sign in <span>→</span>";
+  $("#auth-password").autocomplete = signingUp ? "new-password" : "current-password";
+  $("#auth-switch").textContent = signingUp ? "Sign in" : "Create an account";
+  $(".auth-switch").firstChild.textContent = signingUp ? "Already have an account? " : "New to ScopePulse? ";
+}
+
+function renderSavedProposals(proposals) {
+  if (!Array.isArray(proposals)) return;
+  state.proposals = proposals.length;
+  const onboarding = proposals.length === 0;
+  $("#first-run-empty").hidden = !onboarding;
+  $("#proposal-empty").hidden = !onboarding;
+  $(".stats-grid").hidden = onboarding;
+  $("#recent-proposals").hidden = onboarding;
+  $("#recent-proposals").innerHTML = proposals.slice(0, 3).map((proposal) => `
+    <div class="recent-row saved-proposal-row" data-proposal-id="${escapeHTML(proposal.id)}">
+      <span class="recent-mark mark-blue">${escapeHTML((proposal.client_name || "?").slice(0, 1).toUpperCase())}</span>
+      <div class="recent-name"><strong>${escapeHTML(proposal.client_name)}</strong><small>${escapeHTML(proposal.project_name || "Product design")}</small></div>
+      <span class="recent-amount">${formatMoney(proposal.tiers?.[proposal.selected_tier]?.price || 0)}</span>
+      <span class="status-pill status-${escapeHTML(proposal.status || "draft")}">${escapeHTML(proposal.status || "draft")}</span>
+      <span class="recent-time">${new Date(proposal.created_at).toLocaleDateString()}</span>
+      <button class="row-arrow" data-open-proposal="${escapeHTML(proposal.id)}" aria-label="Open proposal for ${escapeHTML(proposal.client_name)}">↗</button>
+    </div>`).join("");
+  $("#proposal-list").innerHTML = proposals.map((proposal) => `
+    <article class="proposal-list-card" data-status="${escapeHTML(proposal.status || "draft")}" data-proposal-id="${escapeHTML(proposal.id)}">
+      <span class="recent-mark mark-blue">${escapeHTML((proposal.client_name || "?").slice(0, 1).toUpperCase())}</span>
+      <div class="list-main"><strong>${escapeHTML(proposal.client_name)}</strong><small>${escapeHTML(proposal.project_name || "Product design")} · ${new Date(proposal.created_at).toLocaleDateString()}</small></div>
+      <span class="list-amount">${formatMoney(proposal.tiers?.[proposal.selected_tier]?.price || 0)}</span>
+      <span class="status-pill status-${escapeHTML(proposal.status || "draft")}">${escapeHTML(proposal.status || "draft")}</span>
+      <button class="button button-secondary small-button" data-open-proposal="${escapeHTML(proposal.id)}">Open</button>
+    </article>`).join("");
+  $("#stat-active").innerHTML = `${proposals.length} <span class="stat-change positive">saved</span>`;
+  $("#proposal-count").textContent = String(proposals.length);
+  $("#usage-count").textContent = String(proposals.length);
+  $("#usage-progress").style.width = `${Math.min(100, proposals.length / 20 * 100)}%`;
+}
+
+function openSavedProposal(id) {
+  requestFromHost("get-proposal", { proposalId: id }).then((result) => {
+    if (result.error || !result.proposal) {
+      toast(result.error || "Could not open this proposal.");
+      return;
+    }
+    const proposal = result.proposal;
+    state.currentProposalId = proposal.id;
+    state.currentProposalSlug = proposal.share_slug;
+    state.currentAnalysis = {
+      tone: proposal.tone,
+      summary: proposal.summary,
+      proposalBody: proposal.proposal_body,
+      risks: proposal.risks || [],
+      pricing: Object.fromEntries(
+        Object.entries(proposal.tiers || {}).map(([key, value]) => [key, value.price]),
+      ),
+    };
+    state.currentTiers = proposal.tiers;
+    $("#client-name").value = proposal.client_name;
+    $("#job-description").value = proposal.brief;
+    setTone(proposal.tone);
+    updatePrices(proposal.tiers?.standard?.price || getBaseBudget(proposal.brief));
+    renderRisks((proposal.risks || []).map((risk) => ({
+      ...risk,
+      icon: risk.level === "high" ? "!" : risk.level === "medium" ? "◷" : "✓",
+    })));
+    $("#analysis-title").textContent = "Your saved strategy";
+    $("#proposal-summary").textContent = proposal.summary;
+    $("#portal-overview").textContent = proposal.proposal_body;
+    selectTier(proposal.selected_tier || "standard");
+    showView("overview");
+    toast(`Opened ${proposal.client_name}'s saved proposal.`);
+  });
+}
+
+function handleHostMessage(event) {
+  if (event.source !== window.parent || event.origin !== window.location.origin) return;
+  const message = event.data;
+  if (!message || message.source !== "scopepulse-host") return;
+  if (message.type === "host-ready") {
+    sendToHost("ready");
+    return;
+  }
+  if (message.requestId && bridgeRequests.has(message.requestId)) {
+    bridgeRequests.get(message.requestId)(message);
+  }
+  if (message.type === "backend-state") {
+    state.backendConfigured = Boolean(message.configured);
+    state.aiConfigured = Boolean(message.aiConfigured);
+    $(".demo-label").textContent = state.aiConfigured ? "AI-READY" : state.backendConfigured ? "ACCOUNT SYNC" : "LOCAL PREVIEW";
+    $("#analysis-disclaimer").innerHTML = state.aiConfigured
+      ? "<span>✦</span> Your brief is securely sent to Anthropic for analysis when you generate a proposal."
+      : state.backendConfigured
+        ? "<span>⌁</span> Add ANTHROPIC_API_KEY to enable AI. Your proposals will still sync to your Supabase workspace."
+        : "<span>⌁</span> Local preview uses heuristic analysis. Connect your workspace to enable AI-powered insights.";
+    if (!state.backendConfigured) $("#profile-email").textContent = "Local preview";
+    return;
+  }
+  if (message.type === "auth-state") {
+    updateAuthState(message.user);
+    if (message.error) toast(message.error);
+    return;
+  }
+  if (message.type === "auth-result") {
+    $("#auth-submit").disabled = false;
+    if (message.error) {
+      $("#auth-notice").textContent = message.error;
+    } else if (message.message) {
+      $("#auth-notice").textContent = message.message;
+    } else if (message.success && state.authMode === "sign-out") {
+      updateAuthState(null);
+      toast("You are signed out.");
+    } else if (message.success) {
+      toast(state.authMode === "sign-up" ? "Your account is ready." : "Welcome back.");
+    }
+    return;
+  }
+  if (message.type === "analysis-result" && message.error) {
+    return;
+  }
+  if (message.type === "proposal-saved") {
+    if (message.error) {
+      toast(`Analysis complete, but this proposal could not be saved: ${message.error}`);
+      return;
+    }
+    state.currentProposalId = message.proposal.id;
+    state.currentProposalSlug = message.proposal.share_slug;
+    toast("Proposal saved to your workspace.");
+    return;
+  }
+  if (message.type === "proposal-list") {
+    if (message.error) {
+      toast(`Could not load saved proposals: ${message.error}`);
+      return;
+    }
+    renderSavedProposals(message.proposals);
+    return;
+  }
+  if (message.type === "proposal-detail" && message.error) {
+    toast(`Could not open this proposal: ${message.error}`);
+    return;
+  }
+  if (message.type === "workspace-list") {
+    if (message.error) {
+      toast(`Could not load workspaces: ${message.error}`);
+      return;
+    }
+    renderWorkspaces(message.workspaces, message.activeWorkspaceId);
+    return;
+  }
+  if (message.type === "workspace-created" && message.error) {
+    $("#workspace-submit").disabled = false;
+    $("#workspace-notice").textContent = message.error;
+    return;
+  }
+  if (message.type === "workspace-created" && message.workspaceId) {
+    $("#workspace-submit").disabled = false;
+    $("#workspace-overlay").classList.remove("open");
+    $("#workspace-overlay").setAttribute("aria-hidden", "true");
+    $("#workspace-input").value = "";
+    toast("Your new workspace is ready.");
+    return;
+  }
+  if (message.type === "workspace-selected" && message.error) {
+    toast(message.error);
+    return;
+  }
+  if (message.type === "proposal-published" && message.error) {
+    toast(`Could not create the client link: ${message.error}`);
+  }
+}
+
 function showView(name) {
   const view = $(`#view-${name}`);
   if (!view) return;
@@ -62,6 +322,7 @@ function showView(name) {
   $$(".nav-item[data-view]").forEach((item) => item.classList.toggle("active", item.dataset.view === name));
   const title = name === "client" ? "Client preview" : name.charAt(0).toUpperCase() + name.slice(1);
   $("#current-crumb").textContent = title;
+  closeMobileNavigation();
   if (name !== "client" && window.location.hash.startsWith("#/p/")) {
     history.replaceState(null, "", "#overview");
   }
@@ -226,7 +487,8 @@ function updatePrices(base) {
     if (portalPrice) portalPrice.textContent = formatMoney(price);
   });
   const selected = $(`.tier-card[data-tier="${state.selectedTier}"] .tier-price`);
-  $("#list-brightforge-amount").textContent = selected ? selected.textContent : formatMoney(base);
+  const exampleAmount = $("#list-brightforge-amount");
+  if (exampleAmount) exampleAmount.textContent = selected ? selected.textContent : formatMoney(base);
   $("#stat-active").innerHTML = `${state.proposals} <span class="stat-change positive">↑ 2</span>`;
   $("#proposal-count").textContent = String(state.proposals);
   $("#usage-count").textContent = String(state.proposals);
@@ -266,20 +528,26 @@ function setTone(tone) {
 function updatePortalOverview() {
   $("#portal-client-name").textContent = $("#client-name").value.trim() || "Your project";
   $("#proposal-client-name").innerHTML = `${escapeHTML($("#client-name").value.trim() || "Your project")} <span>· Product design</span>`;
-  $("#portal-overview").textContent = toneCopy[state.tone].intro;
+  $("#portal-overview").textContent = state.currentAnalysis?.tone === state.tone
+    ? state.currentAnalysis.proposalBody
+    : toneCopy[state.tone].intro;
   $("#portal-note").textContent = toneCopy[state.tone].note;
 }
 
 function renderPortalTiers() {
-  const tiers = [
-    { key: "quick", title: "MVP / Quick Win", detail: "Discovery and one high-impact workflow · 1 week" },
-    { key: "standard", title: "Standard Scale", detail: "Research and the core product experience · 3 weeks" },
-    { key: "enterprise", title: "Enterprise Growth", detail: "System-wide design and team enablement · 5 weeks" },
-  ];
-  $("#portal-tier-list").innerHTML = tiers.map((tier) => `
-    <button class="portal-tier ${tier.key === state.selectedTier ? "selected" : ""}" data-portal-tier="${tier.key}">
-      <strong>${tier.title}</strong><span class="portal-price" data-portal-price="${tier.key}">${$(`[data-price="${tier.key}"]`).textContent}</span><small>${tier.detail}</small>
-    </button>`).join("");
+  const defaultTiers = {
+    quick: { title: "MVP / Quick Win", detail: "Discovery and one high-impact workflow · 1 week" },
+    standard: { title: "Standard Scale", detail: "Research and the core product experience · 3 weeks" },
+    enterprise: { title: "Enterprise Growth", detail: "System-wide design and team enablement · 5 weeks" },
+  };
+  const tiers = state.currentTiers || defaultTiers;
+  $("#portal-tier-list").innerHTML = ["quick", "standard", "enterprise"].map((key) => {
+    const tier = tiers[key] || defaultTiers[key];
+    return `
+    <button class="portal-tier ${key === state.selectedTier ? "selected" : ""}" data-portal-tier="${key}">
+      <strong>${escapeHTML(tier.title)}</strong><span class="portal-price" data-portal-price="${key}">${$(`[data-price="${key}"]`).textContent}</span><small>${escapeHTML(tier.detail)}</small>
+    </button>`;
+  }).join("");
 }
 
 function selectTier(tier) {
@@ -296,13 +564,28 @@ function selectTier(tier) {
   renderPortalTiers();
 }
 
-function openPortal() {
+async function openPortal() {
   updatePortalOverview();
   renderPortalTiers();
   const slug = ($("#client-name").value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")) || "client";
   history.replaceState(null, "", `#/p/${slug}`);
+  if (state.backendConfigured && state.user && state.currentProposalId) {
+    const result = await requestFromHost("publish-proposal", {
+      proposal: { id: state.currentProposalId, selectedTier: state.selectedTier },
+    });
+    if (result.error || !result.url) {
+      toast(result.error || "Could not create a shareable client link.");
+      return;
+    }
+    window.parent.location.assign(result.url);
+    return;
+  }
+  if (state.backendConfigured && state.user && !state.currentProposalId) {
+    toast("Save this proposal before creating its client link.");
+    return;
+  }
   showView("client");
-  toast("Shareable demo link ready: scopepulse.demo/p/" + slug);
+  toast(`Local preview for ${slug}. Sign in to publish a shareable client link.`);
 }
 
 function openCommandPalette() {
@@ -353,7 +636,7 @@ function readClipboard() {
   });
 }
 
-function generateProposal(event) {
+async function generateProposal(event) {
   event.preventDefault();
   const description = $("#job-description").value.trim();
   if (!description) {
@@ -361,6 +644,11 @@ function generateProposal(event) {
     toast($("#job-url").value.trim()
       ? "This browser-only demo cannot fetch a job-post URL. Paste the visible job description to analyze it."
       : "Add a job description before starting the brief scan.");
+    return;
+  }
+  if (state.backendConfigured && !state.user) {
+    toast("Sign in to analyze and save a proposal.");
+    openAuthDialog();
     return;
   }
   const button = $("#generate-button");
@@ -382,26 +670,109 @@ function generateProposal(event) {
     status.textContent = current[1];
     step += 1;
   }, 650);
-  window.setTimeout(() => {
-    window.clearInterval(interval);
+  try {
+    let analysis;
+    if (state.backendConfigured) {
+      const result = await requestFromHost("analyze", {
+        description,
+        clientName: $("#client-name").value.trim() || "Your project",
+        tone: state.tone,
+      });
+      if (result.error) throw new Error(result.error);
+      analysis = result.analysis;
+    } else {
+      await new Promise((resolve) => window.setTimeout(resolve, 2100));
+      analysis = {
+        summary: "A focused first step, with room to grow into the full experience.",
+        proposalBody: toneCopy[state.tone].intro,
+        suggestedFirstStep: "Start with a focused discovery sprint. Agree on outcomes, scope, and feedback milestones before committing to later phases.",
+        risks: buildRisks(description),
+        pricing: (() => {
+          const standard = getBaseBudget(description);
+          return {
+            quick: Math.round(standard * .5 / 100) * 100,
+            standard,
+            enterprise: Math.round(standard * 1.5 / 100) * 100,
+          };
+        })(),
+      };
+    }
+
     const client = $("#client-name").value.trim() || "Your project";
     $("#client-name").value = client;
+    const tiers = {
+      quick: {
+        title: "MVP / Quick Win",
+        price: analysis.pricing.quick,
+        detail: "A focused first milestone with the highest-impact workflow.",
+      },
+      standard: {
+        title: "Standard Scale",
+        price: analysis.pricing.standard,
+        detail: "A complete, validated product experience with clear delivery milestones.",
+      },
+      enterprise: {
+        title: "Enterprise Growth",
+        price: analysis.pricing.enterprise,
+        detail: "A broader design partnership with team alignment and a scalable system.",
+      },
+    };
+    state.currentProposalId = crypto.randomUUID();
+    state.currentProposalSlug = null;
+    state.currentTiers = tiers;
+    state.currentAnalysis = { ...analysis, tone: state.tone };
     $("#proposal-client-name").innerHTML = `${escapeHTML(client)} <span>· Product design</span>`;
     $("#portal-client-name").textContent = client;
     $("#analysis-title").textContent = "Signals worth getting ahead of";
-    renderRisks(buildRisks(description));
-    updatePrices(getBaseBudget(description));
+    renderRisks(analysis.risks.map((risk) => ({
+      ...risk,
+      icon: risk.level === "high" ? "!" : risk.level === "medium" ? "◷" : "✓",
+    })));
+    updatePrices(analysis.pricing.standard);
     setTone(state.tone);
     selectTier("standard");
-    state.proposals += 1;
-    $("#proposal-summary").textContent = "Research + core product experience. Validated, ready to build in 3 weeks.";
-    button.innerHTML = original;
-    button.disabled = false;
+    $("#portal-overview").textContent = analysis.proposalBody;
+    $("#proposal-summary").textContent = analysis.summary;
+    $(".analysis-footer span:last-child").textContent = analysis.suggestedFirstStep;
+    state.currentTiers = tiers;
+    renderPortalTiers();
     status.textContent = "SCAN COMPLETE";
     $("#proposal-title-row")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    toast("Brief scanned. Your strategy and tiered offer are ready to refine.");
-    updatePrices(state.basePrice);
-  }, 2100);
+    if (state.backendConfigured && state.user) {
+      const saved = await requestFromHost("save-proposal", {
+        proposal: {
+          id: state.currentProposalId,
+          clientName: client,
+          projectName: "Product design",
+          brief: description,
+          tone: state.tone,
+          summary: analysis.summary,
+          proposalBody: analysis.proposalBody,
+          risks: analysis.risks,
+          tiers,
+          selectedTier: state.selectedTier,
+        },
+      });
+      if (saved.error) toast(`Analysis complete, but the proposal could not be saved: ${saved.error}`);
+      else {
+        state.currentProposalId = saved.proposal.id;
+        state.currentProposalSlug = saved.proposal.share_slug;
+        toast("AI analysis complete. Proposal saved to your workspace.");
+      }
+    } else {
+      state.proposals += 1;
+      updatePrices(state.basePrice);
+      toast("Local demo analysis complete. Sign in to save proposals and publish client links.");
+    }
+  } catch (error) {
+    console.error("Proposal generation failed:", error);
+    status.textContent = "ANALYSIS FAILED";
+    toast(error instanceof Error ? error.message : "Proposal analysis failed. Please try again.");
+  } finally {
+    window.clearInterval(interval);
+    button.innerHTML = original;
+    button.disabled = false;
+  }
 }
 
 function copyProposal() {
@@ -490,6 +861,8 @@ function initNavigation() {
         showView(view);
       }
     }
+    const savedProposal = event.target.closest("[data-open-proposal]");
+    if (savedProposal) openSavedProposal(savedProposal.dataset.openProposal);
     const tier = event.target.closest("[data-tier], [data-portal-tier]");
     if (tier) selectTier(tier.dataset.tier || tier.dataset.portalTier);
   });
@@ -498,6 +871,122 @@ function initNavigation() {
     $$(".filter-tab").forEach((item) => item.classList.toggle("active", item === button));
     $$(".proposal-list-card").forEach((card) => card.classList.toggle("hidden", button.dataset.filter !== "all" && card.dataset.status !== button.dataset.filter));
   }));
+}
+
+function closeMobileNavigation() {
+  $(".sidebar").classList.remove("mobile-open");
+  $("#mobile-nav-backdrop").classList.remove("visible");
+  $("#mobile-menu-button").setAttribute("aria-expanded", "false");
+}
+
+function initAuth() {
+  $("#auth-button").addEventListener("click", async () => {
+    if (!state.user) {
+      openAuthDialog();
+      return;
+    }
+    state.authMode = "sign-out";
+    await requestFromHost("auth", { action: "sign-out" });
+  });
+  $("#profile-button").addEventListener("click", () => {
+    if (state.user) {
+      state.authMode = "sign-out";
+      requestFromHost("auth", { action: "sign-out" });
+    } else {
+      openAuthDialog();
+    }
+  });
+  $("#auth-close").addEventListener("click", closeAuthDialog);
+  $("#auth-overlay").addEventListener("click", (event) => {
+    if (event.target === $("#auth-overlay")) closeAuthDialog();
+  });
+  $("#auth-switch").addEventListener("click", () => {
+    setAuthMode(state.authMode === "sign-in" ? "sign-up" : "sign-in");
+    $("#auth-notice").textContent = "";
+  });
+  $("#auth-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!state.backendConfigured) {
+      openAuthDialog();
+      return;
+    }
+    const email = $("#auth-email").value.trim();
+    const password = $("#auth-password").value;
+    if (password.length < 8) {
+      $("#auth-notice").textContent = "Use a password with at least 8 characters.";
+      return;
+    }
+    $("#auth-submit").disabled = true;
+    $("#auth-submit").textContent = state.authMode === "sign-up" ? "Creating account…" : "Signing in…";
+    $("#auth-notice").textContent = "";
+    const result = await requestFromHost("auth", {
+      action: state.authMode,
+      email,
+      password,
+    });
+    if (result.error) {
+      $("#auth-notice").textContent = result.error;
+      $("#auth-submit").disabled = false;
+      setAuthMode(state.authMode);
+    } else if (result.message) {
+      $("#auth-notice").textContent = result.message;
+      $("#auth-submit").disabled = false;
+      setAuthMode(state.authMode);
+    }
+  });
+  $("#mobile-menu-button").addEventListener("click", () => {
+    const open = !$(".sidebar").classList.contains("mobile-open");
+    $(".sidebar").classList.toggle("mobile-open", open);
+    $("#mobile-nav-backdrop").classList.toggle("visible", open);
+    $("#mobile-menu-button").setAttribute("aria-expanded", String(open));
+  });
+  $("#mobile-nav-backdrop").addEventListener("click", closeMobileNavigation);
+  $("#workspace-select").addEventListener("change", async (event) => {
+    const workspaceId = event.target.value;
+    const result = await requestFromHost("select-workspace", { workspaceId });
+    if (result.error) {
+      toast(result.error);
+      return;
+    }
+    toast("Workspace switched.");
+  });
+  $("#workspace-create").addEventListener("click", () => {
+    if (!state.user) {
+      toast("Sign in to create a workspace.");
+      openAuthDialog();
+      return;
+    }
+    $("#workspace-overlay").classList.add("open");
+    $("#workspace-overlay").setAttribute("aria-hidden", "false");
+    $("#workspace-input").focus();
+  });
+  $("#workspace-close").addEventListener("click", () => {
+    $("#workspace-overlay").classList.remove("open");
+    $("#workspace-overlay").setAttribute("aria-hidden", "true");
+  });
+  $("#workspace-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const workspaceName = $("#workspace-input").value.trim();
+    if (workspaceName.length < 2) {
+      $("#workspace-notice").textContent = "Workspace names need at least 2 characters.";
+      return;
+    }
+    $("#workspace-submit").disabled = true;
+    $("#workspace-submit").textContent = "Creating workspace…";
+    $("#workspace-notice").textContent = "";
+    const result = await requestFromHost("workspace-create", { workspaceName });
+    if (result.error) {
+      $("#workspace-submit").disabled = false;
+      $("#workspace-submit").innerHTML = 'Create workspace <span>→</span>';
+      $("#workspace-notice").textContent = result.error;
+    } else {
+      $("#workspace-submit").innerHTML = 'Create workspace <span>→</span>';
+    }
+  });
+  $("#empty-start").addEventListener("click", () => {
+    $("#job-description").focus();
+    $("#brief-form").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
 }
 
 function initKeyboardShortcuts() {
@@ -514,6 +1003,11 @@ function initKeyboardShortcuts() {
       closeCommandPalette();
       return;
     }
+    if (event.key === "Escape" && $("#auth-overlay").classList.contains("open")) {
+      closeAuthDialog();
+      return;
+    }
+    if (event.key === "Escape") closeMobileNavigation();
     if (isTyping || event.metaKey || event.ctrlKey || event.altKey || $("#command-overlay").classList.contains("open")) return;
     if (event.key.toLowerCase() === "n") {
       runCommand("generate");
@@ -558,12 +1052,24 @@ function init() {
   proofFocus.setAttribute("aria-live", "polite");
   proofFocus.innerHTML = '<span class="proof-focus-label" id="proof-focus-label"></span><p id="proof-focus-copy"></p>';
   $("#portal-overview-section").after(proofFocus);
+  window.addEventListener("message", handleHostMessage);
   initNavigation();
   initCommandPalette();
   initKeyboardShortcuts();
+  initAuth();
   initIntegrations();
   initRoute();
-  $$(".tone-option").forEach((button) => button.addEventListener("click", () => setTone(button.dataset.tone)));
+  $$(".tone-option").forEach((button) => button.addEventListener("click", () => {
+    const nextTone = button.dataset.tone;
+    if (state.currentAnalysis && nextTone !== state.tone) {
+      state.currentAnalysis = null;
+      state.currentProposalId = null;
+      state.currentProposalSlug = null;
+      state.currentTiers = null;
+      toast("Proposal angle changed. Re-run the analysis to refresh your saved proposal.");
+    }
+    setTone(nextTone);
+  }));
   $("#brief-form").addEventListener("submit", generateProposal);
   $("#clipboard-parse").addEventListener("click", readClipboard);
   $("#open-portal").addEventListener("click", openPortal);
@@ -591,6 +1097,7 @@ function init() {
   setTone(state.tone);
   renderPortalTiers();
   updateInsights();
+  sendToHost("ready");
 }
 
 init();
