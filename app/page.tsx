@@ -1,8 +1,18 @@
 export default function Page() {
   return (
-    <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      <h1>ScopePulse is Live!</h1>
-      <p>Automated administrative co-op and proposal generator.</p>
+    <main>
+      <iframe
+        title="ScopePulse proposal workspace"
+        src="/scopepulse/index.html"
+        allow="clipboard-read; clipboard-write"
+        style={{
+          position: "fixed",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          border: 0,
+        }}
+      />
     </main>
   );
 }

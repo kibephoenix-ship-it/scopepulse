@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#090b0f">
+    <meta name="description" content="A smarter workspace for winning better freelance projects.">
+    <title>ScopePulse — Proposal intelligence</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#overview" aria-label="ScopePulse home">
+          <span class="brand-mark"><span></span><span></span><span></span></span>
+          <span>scope<span class="brand-light">pulse</span></span>
+        </a>
+        <div class="workspace-picker">
+          <span class="avatar avatar-violet">J</span>
+          <span class="workspace-copy"><strong>Jordan's studio</strong><small>Pro workspace</small></span>
+          <span class="chevron">⌄</span>
+        </div>
+        <p class="nav-label">WORKSPACE</p>
+        <nav class="primary-nav" aria-label="Main navigation">
+          <button class="nav-item active" data-view="overview"><span class="nav-icon">◫</span>Overview</button>
+          <button class="nav-item" data-view="proposals"><span class="nav-icon">▤</span>Proposals<span class="nav-count" id="proposal-count">4</span></button>
+          <button class="nav-item" data-view="insights"><span class="nav-icon">⌁</span>Insights</button>
+          <button class="nav-item" data-view="integrations"><span class="nav-icon">⌘</span>Integrations</button>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="plan-card">
+            <div class="plan-top"><span class="plan-dot"></span><span>YOUR MONTHLY PULSE</span></div>
+            <strong><span id="usage-count">4</span> of 20 proposals</strong>
+            <div class="progress-track"><span id="usage-progress"></span></div>
+            <button class="text-button" data-view="settings">Explore Pro <span>↗</span></button>
+          </div>
+          <button class="nav-item settings-link" data-view="settings"><span class="nav-icon">⚙</span>Settings</button>
+          <button class="profile-button"><span class="avatar avatar-blue">JD</span><span class="profile-copy"><strong>Jordan Davis</strong><small>jordan@studio.co</small></span><span class="chevron">···</span></button>
+        </div>
+      </aside>
+
+      <main class="main-area">
+        <header class="topbar">
+          <div class="breadcrumbs"><span>Workspace</span><span class="crumb-divider">/</span><strong id="current-crumb">Overview</strong></div>
+          <div class="topbar-actions">
+            <button class="icon-button notification-button" aria-label="Notifications" title="Notifications" id="notification-button">♧<span class="notification-dot"></span></button>
+            <button class="shortcut-button" id="command-open"><span>⌘</span> K <span class="shortcut-hint">Quick actions</span></button>
+            <span class="avatar avatar-blue top-avatar">JD</span>
+          </div>
+        </header>
+
+        <div class="content">
+          <section class="view active" id="view-overview">
+            <div class="page-heading">
+              <div><p class="eyebrow"><span class="live-dot"></span> SUNDAY, NOVEMBER 8</p><h1>Make your next move <span class="gradient-text">the right one.</span></h1><p class="page-subtitle">A little strategy turns a good brief into a great client relationship.</p></div>
+              <button class="button button-secondary" id="new-proposal-shortcut"><span>＋</span> New proposal <kbd>N</kbd></button>
+            </div>
+
+            <div class="stats-grid">
+              <article class="stat-card"><div class="stat-top"><span>Active proposals</span><span class="stat-icon indigo">▤</span></div><div class="stat-value" id="stat-active">4 <span class="stat-change positive">↑ 2</span></div><div class="stat-foot">vs. last 30 days</div></article>
+              <article class="stat-card"><div class="stat-top"><span>Win rate</span><span class="stat-icon mint">↗</span></div><div class="stat-value">38<span class="stat-unit">%</span> <span class="stat-change positive">↑ 8%</span></div><div class="stat-foot">vs. last 30 days</div></article>
+              <article class="stat-card"><div class="stat-top"><span>Avg. proposal value</span><span class="stat-icon amber">$</span></div><div class="stat-value">$4,850 <span class="stat-change positive">↑ 12%</span></div><div class="stat-foot">across 12 proposals</div></article>
+              <article class="stat-card"><div class="stat-top"><span>Client attention</span><span class="stat-icon rose">◷</span></div><div class="stat-value">4m 32s <span class="stat-change neutral">avg.</span></div><div class="stat-foot">time spent reviewing</div></article>
+            </div>
+
+            <div class="section-title-row"><div><p class="eyebrow">YOUR STRATEGY DESK</p><h2>Start with the brief</h2></div><span class="secure-note"><span>✦</span> Thoughtful proposals, not templates</span></div>
+            <div class="strategy-grid">
+              <article class="panel brief-panel">
+                <div class="panel-heading"><div class="panel-title-icon">✳</div><div><h3>Project intelligence</h3><p>Find the signal before you send the pitch.</p></div><span class="demo-label">DEMO MODE</span></div>
+                <form id="brief-form">
+                  <div class="field-row">
+                    <label class="field"><span>CLIENT / PROJECT</span><input id="client-name" type="text" value="Brightforge" placeholder="e.g. Brightforge" autocomplete="organization"></label>
+                    <label class="field"><span>POSTING URL <span class="optional">(optional)</span></span><input id="job-url" type="url" placeholder="https://…"></label>
+                  </div>
+                  <label class="field posting-field"><span>JOB DESCRIPTION <span class="field-meta">Paste a brief or use the clipboard parser</span></span><textarea id="job-description" rows="5" placeholder="Paste the project brief here. We'll surface scope, budget, and timeline signals before you write.">We're looking for a product designer to redesign our B2B SaaS dashboard and build a new analytics experience. Need someone who can start immediately and deliver the complete product in 2 weeks. Must include user research, 12+ high-fidelity screens, a clickable prototype, design system, and developer handoff. Budget is $1,500 fixed. Looking for a long-term partner if it goes well.</textarea></label>
+                  <button type="button" class="clipboard-button" id="clipboard-parse">↧ <span>Paste from clipboard</span><span class="clipboard-hint">Parse a copied job post</span></button>
+                  <div class="tone-picker"><div class="tone-label"><span>PROPOSAL ANGLE</span><span class="field-meta">Choose your point of view</span></div><div class="tone-options" role="group" aria-label="Proposal tone"><button type="button" class="tone-option selected" data-tone="collaborative"><span>◉</span><strong>Collaborative</strong><small>Agile & human</small></button><button type="button" class="tone-option" data-tone="formal"><span>◈</span><strong>Data-driven</strong><small>Formal & clear</small></button><button type="button" class="tone-option" data-tone="bold"><span>↗</span><strong>Disruptive</strong><small>Bold & visionary</small></button></div></div>
+                  <button class="button button-primary generate-button" id="generate-button" type="submit"><span>✦</span> Analyze & shape proposal <span class="button-arrow">→</span></button>
+                  <p class="form-footnote"><span>⌁</span> Strategy analysis is a local demo. Connect an AI provider for production insights.</p>
+                </form>
+              </article>
+
+              <aside class="analysis-column">
+                <article class="panel analysis-panel" id="analysis-panel">
+                  <div class="analysis-header"><div class="analysis-symbol">⌁</div><div><p class="eyebrow">BRIEF SCAN</p><h3 id="analysis-title">A few things to get ahead of</h3></div><span class="scan-status" id="scan-status">READY</span></div>
+                  <div class="risk-list" id="risk-list">
+                    <div class="risk-item risk-high"><span class="risk-mark">!</span><div><strong>Scope is doing a lot of work</strong><p>Research, 12+ screens, a design system, and handoff need clear boundaries.</p></div></div>
+                    <div class="risk-item risk-high"><span class="risk-mark">↗</span><div><strong>Budget doesn't match the ask</strong><p>$1,500 is tight for this scope. Protect the outcome with a phased offer.</p></div></div>
+                    <div class="risk-item risk-medium"><span class="risk-mark">◷</span><div><strong>Two weeks is a stretch</strong><p>Research through developer handoff needs review time and client feedback.</p></div></div>
+                  </div>
+                  <div class="analysis-footer"><span class="confidence-mark">✳</span><span>Start with a focused discovery sprint. Earn the next phase.</span></div>
+                </article>
+                <article class="panel angle-panel"><div class="angle-heading"><span class="angle-spark">✧</span><span>THE ANGLE</span></div><p id="angle-copy">Position yourself as a thoughtful partner: align on the highest-impact workflow first, then build momentum together.</p><div class="angle-tags"><span id="tone-tag">Collaborative</span><span>Client-first framing</span></div></article>
+              </aside>
+            </div>
+
+            <div class="section-title-row proposal-title-row"><div><p class="eyebrow">READY WHEN YOU ARE</p><h2>Your offer, with options</h2></div><span class="draft-pill"><span></span> LIVE PREVIEW</span></div>
+            <article class="panel proposal-panel">
+              <div class="proposal-topline"><div class="proposal-client"><span class="client-logo">B</span><div><h3 id="proposal-client-name">Brightforge <span>· Product design</span></h3><p id="proposal-summary">A focused first step, with room to grow into the full experience.</p></div></div><button class="icon-button subtle-button" aria-label="More proposal options" id="proposal-menu">···</button></div>
+              <div class="tier-grid" id="tier-grid">
+                <button class="tier-card" data-tier="quick"><span class="tier-label">01 / QUICK WIN</span><strong class="tier-price" data-price="quick">$2,400</strong><span class="tier-caption">Discovery + one key workflow</span><span class="tier-detail">A clear direction in 1 week</span><span class="tier-check">○</span></button>
+                <button class="tier-card recommended selected" data-tier="standard"><span class="recommended-label">RECOMMENDED</span><span class="tier-label">02 / STANDARD SCALE</span><strong class="tier-price" data-price="standard">$4,800</strong><span class="tier-caption">Research + core product experience</span><span class="tier-detail">Validated, ready to build in 3 weeks</span><span class="tier-check">✓</span></button>
+                <button class="tier-card" data-tier="enterprise"><span class="tier-label">03 / GROWTH PARTNER</span><strong class="tier-price" data-price="enterprise">$7,200</strong><span class="tier-caption">System-wide design + team enablement</span><span class="tier-detail">Scale the experience in 5 weeks</span><span class="tier-check">○</span></button>
+              </div>
+              <div class="proposal-bottom"><span class="proposal-insight"><span>✧</span> Three clear paths invite a better conversation.</span><div class="proposal-actions"><button class="button button-secondary" id="copy-proposal">Copy proposal</button><button class="button button-primary" id="open-portal">Preview client link <span>↗</span></button></div></div>
+            </article>
+
+            <div class="section-title-row recent-title-row"><div><p class="eyebrow">KEEP THE MOMENTUM</p><h2>Recent proposals</h2></div><button class="link-button" data-view="proposals">View all →</button></div>
+            <div class="panel recent-panel"><div class="recent-row"><span class="recent-mark mark-lime">N</span><div class="recent-name"><strong>Northstar Labs</strong><small>Customer portal redesign</small></div><span class="recent-amount">$6,400</span><span class="status-pill status-viewed">Viewed</span><span class="recent-time">2h ago</span><button class="row-arrow" aria-label="Open Northstar Labs proposal">↗</button></div><div class="recent-row"><span class="recent-mark mark-purple">S</span><div class="recent-name"><strong>Studio Lumen</strong><small>Brand identity & web</small></div><span class="recent-amount">$3,200</span><span class="status-pill status-won">Won</span><span class="recent-time">Yesterday</span><button class="row-arrow" aria-label="Open Studio Lumen proposal">↗</button></div></div>
+          </section>
+
+          <section class="view" id="view-proposals">
+            <div class="page-heading compact-heading"><div><p class="eyebrow">YOUR WORK, IN MOTION</p><h1>Proposals</h1><p class="page-subtitle">Keep every conversation moving forward.</p></div><button class="button button-primary" data-view="overview"><span>＋</span> Create proposal</button></div>
+            <div class="filter-row"><div class="filter-tabs"><button class="filter-tab active" data-filter="all">All <span>4</span></button><button class="filter-tab" data-filter="viewed">Viewed <span>2</span></button><button class="filter-tab" data-filter="sent">Sent <span>1</span></button><button class="filter-tab" data-filter="won">Won <span>1</span></button></div><button class="button button-secondary search-button" id="proposal-search">⌕ Search proposals <kbd>/</kbd></button></div>
+            <div class="proposal-list">
+              <article class="proposal-list-card" data-status="viewed"><span class="recent-mark mark-lime">N</span><div class="list-main"><strong>Northstar Labs</strong><small>Customer portal redesign · Sent Nov 8</small></div><span class="list-amount">$6,400</span><span class="status-pill status-viewed">Viewed · 2h ago</span><button class="button button-secondary small-button" data-view="overview">Open</button></article>
+              <article class="proposal-list-card" data-status="won"><span class="recent-mark mark-purple">S</span><div class="list-main"><strong>Studio Lumen</strong><small>Brand identity & web · Sent Nov 7</small></div><span class="list-amount">$3,200</span><span class="status-pill status-won">Won</span><button class="button button-secondary small-button" data-view="overview">Open</button></article>
+              <article class="proposal-list-card" data-status="sent"><span class="recent-mark mark-orange">F</span><div class="list-main"><strong>Fieldnotes Health</strong><small>Patient onboarding flow · Sent Nov 6</small></div><span class="list-amount">$5,800</span><span class="status-pill status-sent">Sent · 1d ago</span><button class="button button-secondary small-button" data-view="overview">Open</button></article>
+              <article class="proposal-list-card" data-status="viewed"><span class="recent-mark mark-blue">B</span><div class="list-main"><strong>Brightforge</strong><small>Product design · Draft just now</small></div><span class="list-amount" id="list-brightforge-amount">$4,800</span><span class="status-pill status-draft">Draft</span><button class="button button-secondary small-button" data-view="overview">Open</button></article>
+            </div>
+            <div class="empty-note"><span>✳</span> Good proposals start with good questions. Yours are in the right place.</div>
+          </section>
+
+          <section class="view" id="view-insights">
+            <div class="page-heading compact-heading"><div><p class="eyebrow">THE SIGNAL BEHIND THE SEND</p><h1>Your insights</h1><p class="page-subtitle">Learn what earns attention, trust, and a yes.</p></div><button class="button button-secondary" id="insights-period">Last 30 days&nbsp;⌄</button></div>
+            <div class="stats-grid insight-stats"><article class="stat-card"><div class="stat-top"><span>Proposal opens</span><span class="stat-icon indigo">↗</span></div><div class="stat-value" id="open-count">28 <span class="stat-change positive">↑ 24%</span></div><div class="stat-foot">unique client views</div></article><article class="stat-card"><div class="stat-top"><span>Avg. reading time</span><span class="stat-icon mint">◷</span></div><div class="stat-value">4m 32s</div><div class="stat-foot">across all proposals</div></article><article class="stat-card"><div class="stat-top"><span>Acceptance rate</span><span class="stat-icon amber">✳</span></div><div class="stat-value">38<span class="stat-unit">%</span><span class="stat-change positive">↑ 8%</span></div><div class="stat-foot">4 wins this month</div></article><article class="stat-card"><div class="stat-top"><span>Avg. proposal value</span><span class="stat-icon rose">$</span></div><div class="stat-value">$4,850</div><div class="stat-foot">tiered offers outperform</div></article></div>
+            <div class="insights-grid"><article class="panel chart-panel"><div class="panel-heading"><div><h3>Proposal activity</h3><p>Opens and sends over the last 30 days</p></div><span class="chart-legend"><i></i> Opens</span></div><div class="chart" role="img" aria-label="Proposal opens rose from 3 to 12 in the past four weeks"><div class="chart-y"><span>12</span><span>8</span><span>4</span><span>0</span></div><div class="chart-plot"><div class="chart-gridlines"><i></i><i></i><i></i><i></i></div><div class="bar-group"><span style="height:34%"></span><span style="height:48%"></span><span style="height:41%"></span><span style="height:68%"></span><span style="height:55%"></span><span style="height:78%"></span><span style="height:61%"></span><span style="height:92%"></span><span style="height:72%"></span><span style="height:84%"></span><span style="height:63%"></span><span style="height:100%"></span></div><div class="chart-x"><span>Oct 12</span><span>Oct 19</span><span>Oct 26</span><span>Nov 2</span><span>Nov 9</span></div></div></div></article>
+              <article class="panel heatmap-panel"><div class="panel-heading"><div><h3>What clients actually read</h3><p>Engagement by proposal section</p></div><span class="demo-label">SAMPLE + SESSION</span></div><div class="heatmap-list"><div class="heat-row"><span>Investment & options</span><div class="heat-track"><i style="width:92%"></i></div><strong>92%</strong></div><div class="heat-row"><span>Project approach</span><div class="heat-track"><i style="width:76%"></i></div><strong>76%</strong></div><div class="heat-row"><span>Project overview</span><div class="heat-track"><i style="width:63%"></i></div><strong>63%</strong></div><div class="heat-row"><span>About me</span><div class="heat-track"><i style="width:38%"></i></div><strong>38%</strong></div></div><div class="heatmap-tip"><span>✧</span> Sample data is illustrative; preview engagement updates locally during this session.</div></article></div>
+            <article class="panel activity-panel"><div class="panel-heading"><div><h3>Recent client activity</h3><p>Know when it’s time to follow up</p></div><span class="live-indicator"><i></i> LIVE IN DEMO</span></div><div class="activity-row"><span class="activity-avatar mark-lime">N</span><div><strong>Northstar Labs opened your proposal</strong><small>Viewed Investment and Timeline · 2 hours ago</small></div><span class="activity-time">4m 12s spent</span></div><div class="activity-row"><span class="activity-avatar mark-purple">S</span><div><strong>Studio Lumen accepted your proposal</strong><small>Signed by Alex Chen · Yesterday</small></div><span class="activity-time">Deposit received</span></div></article>
+          </section>
+
+          <section class="view" id="view-integrations">
+            <div class="page-heading compact-heading"><div><p class="eyebrow">YOUR WORKFLOW, CONNECTED</p><h1>Integrations</h1><p class="page-subtitle">Bring the brief in. Keep the momentum going.</p></div><span class="integration-count"><i></i> 2 connected</span></div>
+            <article class="panel workflow-banner"><span class="workflow-icon">⌘</span><div><strong>A better handoff, without the busywork.</strong><p>When a client says yes, your next steps can already be in motion.</p></div><span class="workflow-arrow">Brief&nbsp; → &nbsp;Proposal&nbsp; → &nbsp;Project</span></article>
+            <div class="integration-grid">
+              <article class="panel integration-card"><div class="integration-card-top"><span class="integration-logo logo-notion">N</span><span class="connection connected"><i></i> CONNECTED</span></div><h3>Notion</h3><p>Create a client workspace and project kickoff page when a proposal is won.</p><div class="integration-tags"><span>Project workspace</span><span>Won → kickoff</span></div><button class="integration-action connected-action" data-integration="Notion">Configure connection <span>→</span></button></article>
+              <article class="panel integration-card"><div class="integration-card-top"><span class="integration-logo logo-trello">▤</span><span class="connection connected"><i></i> CONNECTED</span></div><h3>Trello</h3><p>Turn accepted milestones into a ready-to-run client board.</p><div class="integration-tags"><span>Project board</span><span>Milestone sync</span></div><button class="integration-action connected-action" data-integration="Trello">Configure connection <span>→</span></button></article>
+              <article class="panel integration-card"><div class="integration-card-top"><span class="integration-logo logo-upwork">U</span><span class="connection">JOB CAPTURE</span></div><h3>Upwork & job posts</h3><p>Paste a copied job post, or bring in a brief with your browser’s share menu.</p><div class="integration-tags"><span>Clipboard parser</span><span>No scraping</span></div><button class="integration-action" data-integration="Upwork job capture" id="integrations-paste">Try clipboard parser <span>→</span></button></article>
+              <article class="panel integration-card"><div class="integration-card-top"><span class="integration-logo logo-zap">ϟ</span><span class="connection">AUTOMATION</span></div><h3>Webhook & onboarding</h3><p>Send a won event to your CRM, draft an SOW, and kick off a client questionnaire.</p><div class="integration-tags"><span>Signed payload</span><span>Onboarding flow</span></div><button class="integration-action" data-integration="Webhook automation">Set up webhook <span>→</span></button></article>
+              <article class="panel integration-card"><div class="integration-card-top"><span class="integration-logo logo-stripe">S</span><span class="connection">CLIENT CHECKOUT</span></div><h3>Stripe payments</h3><p>Let clients accept an offer and pay a milestone deposit from the proposal portal.</p><div class="integration-tags"><span>Checkout link</span><span>Deposit collection</span></div><button class="integration-action" data-integration="Stripe checkout">Explore payments <span>→</span></button></article>
+              <article class="panel integration-card"><div class="integration-card-top"><span class="integration-logo logo-ai">✳</span><span class="connection">INTELLIGENCE</span></div><h3>AI provider</h3><p>Connect an AI service for grounded scope analysis and voice-matched proposals.</p><div class="integration-tags"><span>Brief analysis</span><span>Proposal drafting</span></div><button class="integration-action" data-integration="AI provider">Configure AI <span>→</span></button></article>
+            </div>
+            <p class="prototype-disclaimer">Connections are illustrative in this frontend prototype. Real integrations require a server, credentials, and provider authorization.</p>
+          </section>
+
+          <section class="view" id="view-settings">
+            <div class="page-heading compact-heading"><div><p class="eyebrow">MAKE IT FEEL LIKE YOURS</p><h1>Settings</h1><p class="page-subtitle">The details behind a thoughtful client experience.</p></div></div>
+            <div class="settings-grid"><article class="panel settings-card"><p class="eyebrow">YOUR STUDIO</p><h3>Profile & proposals</h3><label class="field"><span>YOUR NAME</span><input value="Jordan Davis" aria-label="Your name"></label><label class="field"><span>STUDIO NAME</span><input value="Jordan's studio" aria-label="Studio name"></label><label class="field"><span>PROPOSAL LINK</span><div class="input-prefix"><span>scopepulse.demo/p/</span><input value="jordan-davis" aria-label="Proposal link"></div></label><button class="button button-primary" id="save-settings">Save changes</button></article><article class="panel settings-card"><p class="eyebrow">CLIENT EXPERIENCE</p><h3>Thoughtful by default</h3><div class="setting-row"><div><strong>Notify on proposal open</strong><small>Get a heads-up when clients take a look.</small></div><button class="toggle active" aria-label="Toggle open notifications" aria-pressed="true"><i></i></button></div><div class="setting-row"><div><strong>Include tiered pricing</strong><small>Give clients clear options to move forward.</small></div><button class="toggle active" aria-label="Toggle tiered pricing" aria-pressed="true"><i></i></button></div><div class="setting-row"><div><strong>Request a milestone deposit</strong><small>Enable after Stripe is connected.</small></div><button class="toggle" aria-label="Toggle milestone deposits" aria-pressed="false"><i></i></button></div></article></div>
+          </section>
+
+          <section class="view client-view" id="view-client">
+            <div class="client-topbar"><button class="client-brand" data-view="overview"><span class="brand-mark"><span></span><span></span><span></span></span> scope<span>pulse</span></button><span>Prepared for you by Jordan Davis <span class="client-live"><i></i> SECURE PREVIEW</span></span></div>
+            <div class="client-document">                        <div class="client-doc-eyebrow"><span>PROJECT PROPOSAL</span><span>NOVEMBER 8, 2026</span></div><span class="client-logo client-doc-logo">B</span><h1 id="portal-client-name">Brightforge</h1><p class="client-doc-subtitle">A considered first step toward your next chapter.</p><div class="client-doc-divider"></div><div class="client-section" id="portal-overview-section"><span class="doc-section-label">01 — THE OPPORTUNITY</span><h2>Make the complex feel effortless.</h2><p id="portal-overview">Your analytics experience should make the next right decision obvious. We’ll start by understanding where users get stuck, then shape a focused experience around the moments that matter.</p></div><div class="client-section" id="portal-approach-section"><span class="doc-section-label">02 — THE APPROACH</span><div class="approach-steps"><div><span>01</span><strong>Discover</strong><small>Understand your users and the highest-impact workflow.</small></div><div><span>02</span><strong>Shape</strong><small>Explore, validate, and align on a clear direction.</small></div><div><span>03</span><strong>Deliver</strong><small>Hand off considered designs, ready for your team.</small></div></div></div><div class="client-section client-investment" id="portal-investment-section"><div><span class="doc-section-label">03 — CHOOSE YOUR PATH</span><h2>Start where it makes sense.</h2></div><div class="portal-tier-list" id="portal-tier-list"></div></div><div class="client-section"><span class="doc-section-label">04 — A NOTE FROM JORDAN</span><p class="personal-note" id="portal-note">The best work happens when we make the hard choices together. I’m looking forward to learning what matters most to your team and finding the right first step.</p><span class="signature-script">Jordan Davis</span><small class="signature-caption">Jordan Davis · Independent Product Designer</small></div><div class="acceptance-box"><div class="acceptance-heading"><span>READY TO MOVE FORWARD?</span><span class="secure-mark">⌑ Secure acceptance</span></div><h2>Let’s make it happen.</h2><p>Choose an option, sign below, and we’ll take it from there.</p><label class="field signature-field"><span>TYPE YOUR NAME TO SIGN</span><input id="signature-name" type="text" placeholder="Your full name" autocomplete="name"></label><label class="consent-row"><input id="accept-terms" type="checkbox"><span>I agree to the selected scope and would like to begin.</span></label><button class="button button-primary accept-button" id="accept-proposal">Accept proposal & continue <span>→</span></button><p class="checkout-note">Deposit checkout is simulated in this preview. No payment will be collected.</p></div><div class="client-doc-footer">Thoughtfully made with <strong>scope<span>pulse</span></strong></div></div>
+          </section>
+        </div>
+        <footer class="app-footer"><span>Made for the work you want to win.</span><span>ScopePulse <i>·</i> Frontend prototype</span></footer>
+      </main>
+    </div>
+
+    <div class="command-overlay" id="command-overlay" aria-hidden="true"><div class="command-dialog" role="dialog" aria-modal="true" aria-label="Quick actions"><div class="command-search"><span>⌕</span><input id="command-input" type="text" placeholder="Where would you like to go?" autocomplete="off"><kbd>ESC</kbd></div><div class="command-label">QUICK ACTIONS</div><div class="command-results" id="command-results"><button data-command="generate"><span>✦</span><strong>Start a new proposal</strong><kbd>N</kbd></button><button data-command="overview"><span>◫</span><strong>Go to overview</strong><kbd>G O</kbd></button><button data-command="proposals"><span>▤</span><strong>Browse proposals</strong><kbd>G P</kbd></button><button data-command="insights"><span>⌁</span><strong>Open insights</strong><kbd>G I</kbd></button><button data-command="integrations"><span>⌘</span><strong>Manage integrations</strong><kbd>G C</kbd></button></div><div class="command-foot"><span>Navigate with <kbd>↑</kbd> <kbd>↓</kbd></span><span>Press <kbd>↵</kbd> to select</span></div></div></div>
+    <div class="toast-region" id="toast-region" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
