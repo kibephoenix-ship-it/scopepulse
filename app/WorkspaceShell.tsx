@@ -27,7 +27,9 @@ export default function WorkspaceShell({ aiConfigured }: { aiConfigured: boolean
   const frame = useRef<HTMLIFrameElement>(null);
   const supabase = useMemo<SupabaseClient | null>(
     () =>
-      supabaseUrl && supabaseKey
+      supabaseUrl &&
+      (supabaseUrl.startsWith("https://") || supabaseUrl.startsWith("http://")) &&
+      supabaseKey
         ? createBrowserClient(supabaseUrl, supabaseKey, {
             auth: { flowType: "pkce" },
           })
