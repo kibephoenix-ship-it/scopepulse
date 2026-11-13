@@ -178,6 +178,9 @@ export default function WorkspaceShell({ aiConfigured }: { aiConfigured: boolean
           const result = await supabase.auth.signUp({
             email: message.email,
             password: message.password,
+            options: {
+              emailRedirectTo: `${window.location.origin}/auth/callback`,
+            },
           });
           errorMessage = result.error?.message ?? null;
           if (!errorMessage && !result.data.session) {
